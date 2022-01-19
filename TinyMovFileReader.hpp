@@ -10,6 +10,56 @@
 
 #define MKTAG(a, b, c, d) (a | (b << 8) | (c << 16) | (d << 24))
 
+class TinyMovMetadata
+{
+public:
+    std::vector<std::string>& Keys()
+    {
+        return _keys;
+    }
+    std::vector<std::string>& Values()
+    {
+        return _values;
+    }
+
+    bool IsOk()
+    {
+        if (Keys().size() != Values().size())
+            return false;
+        
+        return true;
+    }
+
+protected:
+    std::vector<std::string> _keys;
+    std::vector<std::string> _values;
+};
+
+class TinyMovTrackMediaInfo
+{
+public:
+    std::vector<uint64_t>& SampleSizes()
+    {
+        return _sample_sizes;
+    }
+    std::vector<uint64_t>& SampleOffsets()
+    {
+        return _sample_offsets;
+    }
+
+    bool IsOk()
+    {
+        if (SampleSizes().size() != SampleOffsets().size())
+            return false;
+
+        return true;
+    }
+
+protected:
+    std::vector<uint64_t> _sample_sizes;
+    std::vector<uint64_t> _sample_offsets;
+};
+
 class TinyMovTrackMedia
 {
 public:
@@ -42,6 +92,11 @@ public:
         _quality = quality;
     }
 
+    TinyMovTrackMediaInfo& Info()
+    {
+        return _info;
+    }
+
 protected:
     // Media Header
     uint8_t _flags[3];
@@ -51,6 +106,8 @@ protected:
     uint64_t _duration;
     uint16_t _language;
     uint16_t _quality;
+
+    TinyMovTrackMediaInfo _info;
 };
 
 class TinyMovTrack
@@ -130,6 +187,10 @@ public:
     {
         return _tracks;
     }
+    TinyMovMetadata& Metadata()
+    {
+        return _metadata;
+    }
 
     void Flags(uint8_t flags[3])
     {
@@ -190,6 +251,7 @@ public:
 
 protected:
     std::vector<TinyMovTrack> _tracks;
+    TinyMovMetadata _metadata;
 
     // Movie Header
     uint8_t _flags[3];
@@ -269,6 +331,12 @@ public:
     uint64_t get_be64()
     {
         return bswap_64(get_le64());
+    }
+    void read(void* dst, uint32_t size)
+    {
+        uint8_t* dest8 = (uint8_t*)dst;
+        for (uint32_t i = 0; i < size; ++i)
+            dest8[i] = get_byte();
     }
     void seekg(int64_t offset)
     {
@@ -679,7 +747,7 @@ public:
     {
         if (stream.atom_parent_id() != MKTAG('m', 'd', 'i', 'a'))
         {
-            std::cout << "Warning! Parent is not trak!" << std::endl;
+            std::cout << "Warning! Parent is not mdia!" << std::endl;
             return false;
         }
 
@@ -727,7 +795,7 @@ public:
     {
         if (stream.atom_parent_id() != MKTAG('m', 'd', 'i', 'a'))
         {
-            std::cout << "Warning! Parent is not moov!" << std::endl;
+            std::cout << "Warning! Parent is not mdia!" << std::endl;
             return false;
         }
 
@@ -735,6 +803,235 @@ public:
     }
     virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
 } TinyMovFileAtomProcessor_minf;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('s', 't', 'b', 'l');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('m', 'i', 'n', 'f'))
+        {
+            std::cout << "Warning! Parent is not minf!" << std::endl;
+            return false;
+        }
+
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_stbl;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('s', 't', 's', 'z');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('s', 't', 'b', 'l'))
+        {
+            std::cout << "Warning! Parent is not stbl!" << std::endl;
+            return false;
+        }
+
+        uint8_t version = stream.get_byte();
+
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+
+        uint32_t sample_size = stream.get_be32();
+
+        uint32_t entries = stream.get_be32();
+        if (!entries)
+            return true;
+
+        if (sample_size)
+            return true;
+
+        for (int i = 0; i < entries; ++i)
+            stream.get_current_track().Media().Info().SampleSizes().push_back(stream.get_be32());
+
+        return true;
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_stsz;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('s', 't', 'c', 'o');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('s', 't', 'b', 'l'))
+        {
+            std::cout << "Warning! Parent is not stbl!" << std::endl;
+            return false;
+        }
+
+        uint8_t version = stream.get_byte();
+
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+
+        uint32_t entries = stream.get_be32();
+        if (!entries)
+            return true;
+
+        for (int i = 0; i < entries; ++i)
+            stream.get_current_track().Media().Info().SampleOffsets().push_back(stream.get_be32());
+
+        return true;
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_stco;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('m', 'e', 't', 'a');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('m', 'o', 'o', 'v'))
+        {
+            std::cout << "Warning! Parent is not moov!" << std::endl;
+            return false;
+        }
+        
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_meta;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('k', 'e', 'y', 's');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('m', 'e', 't', 'a'))
+        {
+            std::cout << "Warning! Parent is not meta!" << std::endl;
+            return false;
+        }
+
+        stream.seekg(4);    // Skip
+
+        uint32_t count = stream.get_be32();
+
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_keys;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('m', 'd', 't', 'a');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('k', 'e', 'y', 's'))
+        {
+            std::cout << "Warning! Parent is not keys!" << std::endl;
+            return false;
+        }
+
+        uint32_t size = stream.atom_left();
+        char* text = new char[size + 1];
+        stream.read(text, size);
+        text[size] = '\0';
+        mov.Metadata().Keys().push_back(text);
+        delete[] text;
+
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_mdta;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('i', 'l', 's', 't');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('m', 'e', 't', 'a'))
+        {
+            std::cout << "Warning! Parent is not meta!" << std::endl;
+            return false;
+        }
+
+        while (stream.atom_left() > 0)
+        {
+            uint32_t len = stream.get_be32();
+            uint32_t idx = stream.get_be32();
+
+            stream.push_atom(len - 8, Type());
+
+            if(!TinyMovFileAtomProcessor_default.ProcessRead(stream, mov))
+                return false;
+
+            stream.pop_atom();
+        }
+
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_ilst;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('d', 'a', 't', 'a');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('i', 'l', 's', 't'))
+        {
+            std::cout << "Warning! Parent is not ilst!" << std::endl;
+            return false;
+        }
+        
+        uint32_t type_indicator = stream.get_be32();
+        if (type_indicator != 1)
+            throw std::exception();     // FIXME: make support for each data type!
+
+        uint32_t locale_indicator = stream.get_be32();
+        uint32_t size = stream.atom_left();
+        char* text = new char[size + 1];
+        stream.read(text, size);
+        text[size] = '\0';
+        mov.Metadata().Values().push_back(text);
+        delete[] text;
+
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_data;
 
 class TinyMovFileReader
 {
