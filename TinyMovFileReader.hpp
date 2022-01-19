@@ -5,14 +5,122 @@
 #include <stack>
 #include <fstream>
 #include <iostream>
+#include <memory.h>
 #include <byteswap.h>
 
 #define MKTAG(a, b, c, d) (a | (b << 8) | (c << 16) | (d << 24))
 
+class TinyMovTrackMedia
+{
+public:
+    void Flags(uint8_t flags[3])
+    {
+        memcpy(_flags, flags, sizeof(_flags));
+    }
+    void CreationTime(uint64_t creation_time)
+    {
+        _creation_time = creation_time;
+    }
+    void ModificationTime(uint64_t modification_time)
+    {
+        _modification_time = modification_time;
+    }
+    void TimeScale(uint32_t time_scale)
+    {
+        _time_scale = time_scale;
+    }
+    void Duration(uint64_t duration)
+    {
+        _duration = duration;
+    }
+    void Language(uint16_t language)
+    {
+        _language = language;
+    }
+    void Quality(uint16_t quality)
+    {
+        _quality = quality;
+    }
+
+protected:
+    // Media Header
+    uint8_t _flags[3];
+    uint64_t _creation_time;
+    uint64_t _modification_time;
+    uint32_t _time_scale;
+    uint64_t _duration;
+    uint16_t _language;
+    uint16_t _quality;
+};
+
 class TinyMovTrack
 {
 public:
+    void Flags(uint8_t flags[3])
+    {
+        memcpy(_flags, flags, sizeof(_flags));
+    }
+    void CreationTime(uint64_t creation_time)
+    {
+        _creation_time = creation_time;
+    }
+    void ModificationTime(uint64_t modification_time)
+    {
+        _modification_time = modification_time;
+    }
+    void TrackId(uint32_t track_id)
+    {
+        _track_id = track_id;
+    }
+    void Duration(uint64_t duration)
+    {
+        _duration = duration;
+    }
+    void Layer(uint16_t layer)
+    {
+        _layer = layer;
+    }
+    void AlternativeGroup(uint16_t alternative_group)
+    {
+        _alternative_group = alternative_group;
+    }
+    void Volume(uint16_t volume)
+    {
+        _volume = volume;
+    }
+    void DisplayMatrix(uint32_t display_matrix[3][3])
+    {
+        memcpy(_display_matrix, display_matrix, sizeof(_display_matrix));
+    }
+    void TrackWidth(uint32_t track_width)
+    {
+        _track_width = track_width;
+    }
+    void TrackHeight(uint32_t track_height)
+    {
+        _track_height = track_height;
+    }
 
+    TinyMovTrackMedia& Media()
+    {
+        return _media;
+    }
+protected:
+    // Track Header
+    uint8_t _flags[3];
+    uint64_t _creation_time;
+    uint64_t _modification_time;
+    uint32_t _track_id;
+    uint64_t _duration;
+    uint16_t _layer;
+    uint16_t _alternative_group;
+    uint16_t _volume;
+    uint32_t _display_matrix[3][3];
+    uint32_t _track_width;
+    uint32_t _track_height;
+
+    // Track Media
+    TinyMovTrackMedia _media;
 };
 
 class TinyMovFile
@@ -23,8 +131,81 @@ public:
         return _tracks;
     }
 
+    void Flags(uint8_t flags[3])
+    {
+        memcpy(_flags, flags, sizeof(_flags));
+    }
+    void CreationTime(uint64_t creation_time)
+    {
+        _creation_time = creation_time;
+    }
+    void ModificationTime(uint64_t modification_time)
+    {
+        _modification_time = modification_time;
+    }
+    void TimeScale(uint32_t time_scale)
+    {
+        _time_scale = time_scale;
+    }
+    void Duration(uint64_t duration)
+    {
+        _duration = duration;
+    }
+    void PreferredRate(uint16_t preferred_rate)
+    {
+        _preferred_rate = preferred_rate;
+    }
+    void PreferredVolume(uint16_t preferred_volume)
+    {
+        _preferred_volume = preferred_volume;
+    }
+    void DisplayMatrix(uint32_t display_matrix[3][3])
+    {
+        memcpy(_display_matrix, display_matrix, sizeof(_display_matrix));
+    }
+    void PreviewDuration(uint32_t preview_duration)
+    {
+        _preview_duration = preview_duration;
+    }
+    void PosterTime(uint32_t poster_time)
+    {
+        _poster_time = poster_time;
+    }
+    void SelectionTime(uint32_t selection_time)
+    {
+        _selection_time = selection_time;
+    }
+    void SelectionDuration(uint32_t selection_duration)
+    {
+        _selection_duration = selection_duration;
+    }
+    void CurrentTime(uint32_t current_time)
+    {
+        _current_time = current_time;
+    }
+    void NextTrackId(uint32_t next_track_id)
+    {
+        _next_track_id = next_track_id;
+    }
+
 protected:
     std::vector<TinyMovTrack> _tracks;
+
+    // Movie Header
+    uint8_t _flags[3];
+    uint64_t _creation_time;
+    uint64_t _modification_time;
+    uint32_t _time_scale;
+    uint64_t _duration;
+    uint32_t _preferred_rate;
+    uint16_t _preferred_volume;
+    uint32_t _display_matrix[3][3];
+    uint32_t _preview_duration;
+    uint32_t _poster_time;
+    uint32_t _selection_time;
+    uint32_t _selection_duration;
+    uint32_t _current_time;
+    uint32_t _next_track_id;
 };
 
 class fstream_wrapper
@@ -153,11 +334,24 @@ public:
         return parent_id;
     }
 
+    void set_current_track(TinyMovTrack* track)
+    {
+        _current_track = track;
+    }
+    TinyMovTrack& get_current_track()
+    {
+        if (_current_track == nullptr)
+            throw std::exception();
+        return *_current_track;
+    }
+
 protected:
     std::fstream &_stream;
     std::stack<uint32_t> _atom_ids_stack;
     std::stack<int64_t> _atom_offsets_stack;
     std::stack<int64_t> _atom_sizes_stack;
+
+    TinyMovTrack* _current_track;
 };
 
 class ITinyMovFileAtomProcessor
@@ -319,7 +513,15 @@ public:
             return false;
         }
 
-        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+        TinyMovTrack track;
+
+        stream.set_current_track(&track);
+        auto result = TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+        stream.set_current_track(nullptr);
+
+        mov.Tracks().push_back(track);
+
+        return result;
     }
     virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
 } TinyMovFileAtomProcessor_trak;
@@ -342,43 +544,37 @@ public:
         std::cout << "Atom left: " << stream.atom_left() << std::endl;
 
         uint8_t version = stream.get_byte();
-        uint8_t flags0 = stream.get_byte();
-        uint8_t flags1 = stream.get_byte();
-        uint8_t flags2 = stream.get_byte();
 
-        if (version == 1)
-        {
-            uint64_t creation_time = stream.get_be64();
-            uint64_t modification_time = stream.get_be64();
-        }
-        else
-        {
-            uint32_t creation_time = stream.get_be32();
-            uint32_t modification_time = stream.get_be32();
-        }
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+        mov.Flags(flags);
 
-        uint32_t time_scale = stream.get_be32();
-        int64_t duration = (int32_t)((version == 1) ? stream.get_be64() : stream.get_be32());
-
-
-        uint32_t preferred_rate = stream.get_be32();
-        uint16_t preferred_volume = stream.get_be16();
+        mov.CreationTime((version == 1) ? stream.get_be64() : stream.get_be32());
+        mov.ModificationTime((version == 1) ? stream.get_be64() : stream.get_be32());
+        mov.TimeScale(stream.get_be32());
+        mov.Duration((version == 1) ? stream.get_be64() : stream.get_be32());
+        mov.PreferredRate(stream.get_be32());
+        mov.PreferredVolume(stream.get_be16());
 
         stream.seekg(10);               // reserved
 
+        uint32_t display_matrix[3][3];
         for (int i = 0; i < 3; ++i)     // display matrix
         {
-            stream.get_be32();
-            stream.get_be32();
-            stream.get_be32();
+            display_matrix[i][0] = stream.get_be32();
+            display_matrix[i][1] = stream.get_be32();
+            display_matrix[i][2] = stream.get_be32();
         }
+        mov.DisplayMatrix(display_matrix);
 
-        uint32_t preview_duration = stream.get_be32();
-        uint32_t poster_time = stream.get_be32();
-        uint32_t selection_time = stream.get_be32();
-        uint32_t selection_duration = stream.get_be32();
-        uint32_t current_time = stream.get_be32();
-        uint32_t next_track_id = stream.get_be32();
+        mov.PreviewDuration(stream.get_be32());
+        mov.PosterTime(stream.get_be32());
+        mov.SelectionTime(stream.get_be32());
+        mov.SelectionDuration(stream.get_be32());
+        mov.CurrentTime(stream.get_be32());
+        mov.NextTrackId(stream.get_be32());
 
         return true;
     }
@@ -421,49 +617,124 @@ public:
         }
 
         uint8_t version = stream.get_byte();
-        uint8_t flags0 = stream.get_byte();
-        uint8_t flags1 = stream.get_byte();
-        uint8_t flags2 = stream.get_byte();
 
-        if (version == 1)
-        {
-            uint64_t creation_time = stream.get_be64();
-            uint64_t modification_time = stream.get_be64();
-        }
-        else
-        {
-            uint32_t creation_time = stream.get_be32();
-            uint32_t modification_time = stream.get_be32();
-        }
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+        stream.get_current_track().Flags(flags);
 
-        uint32_t track_id = stream.get_be32();
+        stream.get_current_track().CreationTime(
+            (version == 1) ?
+            stream.get_be64() :
+            stream.get_be32());
+        
+        stream.get_current_track().ModificationTime(
+            (version == 1) ?
+            stream.get_be64() :
+            stream.get_be32());
+
+        stream.get_current_track().TrackId(stream.get_be32());
 
         stream.get_be32();      // reserved
 
-        uint64_t duration = (version == 1) ? stream.get_be64() : stream.get_be32();
+        stream.get_current_track().Duration(
+            (version == 1) ?
+            stream.get_be64() :
+            stream.get_be32());
 
         stream.get_be64();      // reserved
 
-        uint16_t layer = stream.get_be16();
-        uint16_t alternative_group = stream.get_be16();
-        uint16_t volume = stream.get_be16();
+        stream.get_current_track().Layer(stream.get_be16());
+        stream.get_current_track().AlternativeGroup(stream.get_be16());
+        stream.get_current_track().Volume(stream.get_be16());
 
         stream.get_be16();      // reserved
 
+        uint32_t display_matrix[3][3];
         for (int i = 0; i < 3; ++i)     // display matrix
         {
-            stream.get_be32();
-            stream.get_be32();
-            stream.get_be32();
+            display_matrix[i][0] = stream.get_be32();
+            display_matrix[i][1] = stream.get_be32();
+            display_matrix[i][2] = stream.get_be32();
         }
+        stream.get_current_track().DisplayMatrix(display_matrix);
 
-        uint32_t track_width = stream.get_be32();
-        uint32_t track_height = stream.get_be32();
+        stream.get_current_track().TrackWidth(stream.get_be32());
+        stream.get_current_track().TrackHeight(stream.get_be32());
 
         return true;
     }
     virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
 } TinyMovFileAtomProcessor_tkhd;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('m', 'd', 'h', 'd');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('m', 'd', 'i', 'a'))
+        {
+            std::cout << "Warning! Parent is not trak!" << std::endl;
+            return false;
+        }
+
+        uint8_t version = stream.get_byte();
+
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+        stream.get_current_track().Media().Flags(flags);
+
+        stream.get_current_track().Media().CreationTime(
+            (version == 1) ?
+            stream.get_be64() :
+            stream.get_be32());
+        
+        stream.get_current_track().Media().ModificationTime(
+            (version == 1) ?
+            stream.get_be64() :
+            stream.get_be32());
+        
+        stream.get_current_track().Media().TimeScale(stream.get_be32());
+
+        stream.get_current_track().Duration(
+            (version == 1) ?
+            stream.get_be64() :
+            stream.get_be32());
+        
+        stream.get_current_track().Media().Language(stream.get_be16());
+        stream.get_current_track().Media().Quality(stream.get_be16());
+
+        return true;
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_mdhd;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('m', 'i', 'n', 'f');
+    }
+    virtual bool ProcessRead(fstream_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('m', 'd', 'i', 'a'))
+        {
+            std::cout << "Warning! Parent is not moov!" << std::endl;
+            return false;
+        }
+
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    virtual bool ProcessWrite(fstream_wrapper& stream, TinyMovFile& mov) {return false;}
+} TinyMovFileAtomProcessor_minf;
 
 class TinyMovFileReader
 {
