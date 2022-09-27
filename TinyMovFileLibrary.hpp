@@ -2522,25 +2522,65 @@ public:
 
         for (int i = 0; i < track.Media().Info().ChunkOffsets().size(); ++i)
         {
-            uint32_t begin_sample_index = 0;
-            uint32_t end_sample_index = track.Media().Info().SampleSizes().size();
+            uint32_t begin_sample_index = i;
+            uint32_t end_sample_index = i + 1;
 
             if (track.Media().Info().SampleToChunk().Entries().size() > 0)
             {
-                end_sample_index = 0;
-
-                auto it = track.Media().Info().SampleToChunk().Entries().begin();
-                do
+                struct tmp_sample_to_chunk_info_t
                 {
-                    begin_sample_index = end_sample_index;
-                    end_sample_index += it->samples_per_chunk;
+                    uint32_t sample_size_sum_before;
+                    uint32_t begin_sample;
+                    uint32_t end_sample;
+                    uint32_t begin_chunk;
+                    uint32_t end_chunk;
+                    uint32_t samples_per_chunk;
+                };
+                std::vector<tmp_sample_to_chunk_info_t> tmp_stci;
 
-                    ++it;
+                for (int g = 0; g < track.Media().Info().SampleToChunk().Entries().size(); ++g)
+                {
+                    auto& entry = track.Media().Info().SampleToChunk().Entries()[g];
 
-                    if (it == track.Media().Info().SampleToChunk().Entries().end())
+                    tmp_sample_to_chunk_info_t tmp_info;
+
+                    tmp_info.samples_per_chunk = entry.samples_per_chunk;
+
+                    tmp_info.begin_chunk = entry.first_chunk - 1;
+                    tmp_info.end_chunk = track.Media().Info().ChunkOffsets().size();
+
+                    // Fix previous info
+                    if (g != 0)
+                    {
+                        tmp_stci[g - 1].end_chunk = tmp_info.begin_chunk;
+                        tmp_stci[g - 1].end_sample = tmp_stci[g - 1].begin_sample + tmp_stci[g - 1].samples_per_chunk * (tmp_stci[g - 1].end_chunk - tmp_stci[g - 1].begin_chunk);
+                    }
+
+                    tmp_info.begin_sample = (g == 0) ? 0 : tmp_stci[g - 1].end_sample;
+                    tmp_info.end_sample = tmp_info.begin_sample + tmp_info.samples_per_chunk * (tmp_info.end_chunk - tmp_info.begin_chunk);
+
+                    tmp_info.sample_size_sum_before = 0;
+                    if (g != 0)
+                    {
+                        tmp_info.sample_size_sum_before = tmp_stci[g - 1].sample_size_sum_before;
+                        for (int l = tmp_stci[g - 1].begin_sample; l < tmp_stci[g - 1].end_sample; ++l)
+                            tmp_info.sample_size_sum_before += track.Media().Info().SampleSizes()[l];
+                    }
+                    
+                    tmp_stci.push_back(tmp_info);
+                }
+
+                for (int g = 0; g < tmp_stci.size(); ++g)
+                {
+                    auto& tmp_stci_item = tmp_stci[g];
+                    if (tmp_stci_item.begin_chunk <= i && i < tmp_stci_item.end_chunk)
+                    {
+                        begin_sample_index = tmp_stci_item.begin_sample + (i - tmp_stci_item.begin_chunk) * tmp_stci_item.samples_per_chunk;
+                        end_sample_index = begin_sample_index + tmp_stci_item.samples_per_chunk;
+
                         break;
-
-                } while (i + 1 >= it->first_chunk);
+                    }
+                }
             }
 
             // Now we need to calculate chunk size (it equals to sum of all sample sizes in this chunk)
