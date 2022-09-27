@@ -78,6 +78,85 @@ protected:
     std::vector<uint8_t> _data;
 };
 
+class TinyMovHandlerInfo
+{
+public:
+    TinyMovHandlerInfo() : _enabled(false) {}
+
+    void Enabled(bool enabled)
+    {
+        _enabled = enabled;
+    }
+    bool Enabled()
+    {
+        return _enabled;
+    }
+
+    void ComponentType(uint32_t component_type)
+    {
+        _component_type = component_type;
+    }
+    uint32_t ComponentType()
+    {
+        return _component_type;
+    }
+
+    void ComponentSubType(uint32_t component_subtype)
+    {
+        _component_subtype = component_subtype;
+    }
+    uint32_t ComponentSubType()
+    {
+        return _component_subtype;
+    }
+
+    void ComponentManufacturer(uint32_t component_manufacturer)
+    {
+        _component_manufacturer = component_manufacturer;
+    }
+    uint32_t ComponentManufacturer()
+    {
+        return _component_manufacturer;
+    }
+
+    void ComponentFlags(uint32_t component_flags)
+    {
+        _component_flags = component_flags;
+    }
+    uint32_t ComponentFlags()
+    {
+        return _component_flags;
+    }
+
+    void ComponentFlagsMask(uint32_t component_flags_mask)
+    {
+        _component_flags_mask = component_flags_mask;
+    }
+    uint32_t ComponentFlagsMask()
+    {
+        return _component_flags_mask;
+    }
+
+    void ComponentName(std::string component_name)
+    {
+        _component_name = component_name;
+    }
+    std::string ComponentName()
+    {
+        return _component_name;
+    }
+
+protected:
+    uint32_t _component_type;
+    uint32_t _component_subtype;
+    uint32_t _component_manufacturer;
+    uint32_t _component_flags;
+    uint32_t _component_flags_mask;
+    std::string _component_name;
+
+    bool _enabled;
+};
+
 class TinyMovMetadata
 {
 public:
@@ -88,6 +167,11 @@ public:
     std::vector<TinyMovMetadataValue>& Values()
     {
         return _values;
+    }
+
+    TinyMovHandlerInfo& Handler()
+    {
+        return _hdlr;
     }
 
     bool IsOk()
@@ -101,29 +185,489 @@ public:
 protected:
     std::vector<TinyMovMetadataKey> _keys;
     std::vector<TinyMovMetadataValue> _values;
+    TinyMovHandlerInfo _hdlr;
+};
+
+class TinyMovTrackMediaVideoDescription
+{
+public:
+    TinyMovTrackMediaVideoDescription() {}
+
+    uint32_t DataFormat()
+    {
+        return _data_format;
+    }
+    void DataFormat(uint32_t data_format)
+    {
+        _data_format = data_format;
+    }
+
+    uint16_t DataReferenceIndex()
+    {
+        return _data_reference_index;
+    }
+    void DataReferenceIndex(uint16_t data_reference_index)
+    {
+        _data_reference_index = data_reference_index;
+    }
+
+    uint16_t Version()
+    {
+        return _version;
+    }
+    void Version(uint16_t version)
+    {
+        _version = version;
+    }
+
+    uint16_t RevisionLevel()
+    {
+        return _revision_level;
+    }
+    void RevisionLevel(uint16_t revision_level)
+    {
+        _revision_level = revision_level;
+    }
+
+    uint32_t Vendor()
+    {
+        return _vendor;
+    }
+    void Vendor(uint32_t vendor)
+    {
+        _vendor = vendor;
+    }
+
+    uint32_t TemporalQuality()
+    {
+        return _temporal_quality;
+    }
+    void TemporalQuality(uint32_t temporal_quality)
+    {
+        _temporal_quality = temporal_quality;
+    }
+
+    uint32_t SpatialQuality()
+    {
+        return _spatial_quality;
+    }
+    void SpatialQuality(uint32_t spatial_quality)
+    {
+        _spatial_quality = spatial_quality;
+    }
+
+    uint16_t Width()
+    {
+        return _width;
+    }
+    void Width(uint16_t width)
+    {
+        _width = width;
+    }
+
+    uint16_t Height()
+    {
+        return _height;
+    }
+    void Height(uint16_t height)
+    {
+        _height = height;
+    }
+
+    uint32_t HorizontalResolution()
+    {
+        return _horizontal_resolution;
+    }
+    void HorizontalResolution(uint32_t horizontal_resolution)
+    {
+        _horizontal_resolution = horizontal_resolution;
+    }
+
+    uint32_t VerticalResolution()
+    {
+        return _vertical_resolution;
+    }
+    void VerticalResolution(uint32_t vertical_resolution)
+    {
+        _vertical_resolution = vertical_resolution;
+    }
+
+    uint16_t FrameCount()
+    {
+        return _frame_count;
+    }
+    void FrameCount(uint16_t frame_count)
+    {
+        _frame_count = frame_count;
+    }
+
+    std::string CompressorName()
+    {
+        return _compressor_name;
+    }
+    void CompressorName(std::string compressor_name)
+    {
+        _compressor_name = compressor_name;
+    }
+
+    uint16_t Depth()
+    {
+        return _depth;
+    }
+    void Depth(uint16_t depth)
+    {
+        _depth = depth;
+    }
+
+    uint16_t ColorTableId()
+    {
+        return _color_table_id;
+    }
+    void ColorTableId(uint16_t color_table_id)
+    {
+        _color_table_id = color_table_id;
+    }
+
+    std::vector<uint8_t>& ExtensionsData()
+    {
+        return _extensions_data;
+    }
+
+protected:
+    uint32_t _data_format;
+    uint16_t _data_reference_index;
+    uint16_t _version;
+    uint16_t _revision_level;
+    uint32_t _vendor;
+    uint32_t _temporal_quality;
+    uint32_t _spatial_quality;
+    uint16_t _width;
+    uint16_t _height;
+    uint32_t _horizontal_resolution;
+    uint32_t _vertical_resolution;
+    uint16_t _frame_count;
+    std::string _compressor_name;
+    uint16_t _depth;
+    uint16_t _color_table_id;
+
+    std::vector<uint8_t> _extensions_data;
+};
+
+class TinyMovTrackMediaAudioDescription
+{
+public:
+    TinyMovTrackMediaAudioDescription() {}
+
+    uint32_t DataFormat()
+    {
+        return _data_format;
+    }
+    void DataFormat(uint32_t data_format)
+    {
+        _data_format = data_format;
+    }
+
+    uint16_t DataReferenceIndex()
+    {
+        return _data_reference_index;
+    }
+    void DataReferenceIndex(uint16_t data_reference_index)
+    {
+        _data_reference_index = data_reference_index;
+    }
+
+    uint16_t Version()
+    {
+        return _version;
+    }
+    void Version(uint16_t version)
+    {
+        _version = version;
+    }
+
+    uint16_t RevisionLevel()
+    {
+        return _revision_level;
+    }
+    void RevisionLevel(uint16_t revision_level)
+    {
+        _revision_level = revision_level;
+    }
+
+    uint32_t Vendor()
+    {
+        return _vendor;
+    }
+    void Vendor(uint32_t vendor)
+    {
+        _vendor = vendor;
+    }
+
+    uint16_t NumberOfChannels()
+    {
+        return _number_of_channels;
+    }
+    void NumberOfChannels(uint16_t number_of_channels)
+    {
+        _number_of_channels = number_of_channels;
+    }
+
+    uint16_t SampleSize()
+    {
+        return _sample_size;
+    }
+    void SampleSize(uint16_t sample_size)
+    {
+        _sample_size = sample_size;
+    }
+
+    uint16_t CompressionId()
+    {
+        return _compression_id;
+    }
+    void CompressionId(uint16_t compression_id)
+    {
+        _compression_id = compression_id;
+    }
+
+    uint16_t PacketSize()
+    {
+        return _packet_size;
+    }
+    void PacketSize(uint16_t packet_size)
+    {
+        _packet_size = packet_size;
+    }
+
+    uint32_t SampleRate()
+    {
+        return _sample_rate;
+    }
+    void SampleRate(uint32_t sample_rate)
+    {
+        _sample_rate = sample_rate;
+    }
+
+    std::vector<uint8_t>& ExtensionsData()
+    {
+        return _extensions_data;
+    }
+
+protected:
+    uint32_t _data_format;
+    uint16_t _data_reference_index;
+    uint16_t _version;
+    uint16_t _revision_level;
+    uint32_t _vendor;
+    uint16_t _number_of_channels;
+    uint16_t _sample_size;
+    uint16_t _compression_id;
+    uint16_t _packet_size;
+    uint32_t _sample_rate;
+
+    std::vector<uint8_t> _extensions_data;
+};
+
+class TinyMovTrackMediaTimecodeDescription
+{
+public:
+    TinyMovTrackMediaTimecodeDescription() {}
+
+    uint32_t DataFormat()
+    {
+        return _data_format;
+    }
+    void DataFormat(uint32_t data_format)
+    {
+        _data_format = data_format;
+    }
+
+    uint16_t DataReferenceIndex()
+    {
+        return _data_reference_index;
+    }
+    void DataReferenceIndex(uint16_t data_reference_index)
+    {
+        _data_reference_index = data_reference_index;
+    }
+
+    uint32_t Flags()
+    {
+        return _flags;
+    }
+    void Flags(uint32_t flags)
+    {
+        _flags = flags;
+    }
+
+    uint32_t TimeScale()
+    {
+        return _time_scale;
+    }
+    void TimeScale(uint32_t time_scale)
+    {
+        _time_scale = time_scale;
+    }
+
+    uint32_t FrameDuration()
+    {
+        return _frame_duration;
+    }
+    void FrameDuration(uint32_t frame_duration)
+    {
+        _frame_duration = frame_duration;
+    }
+
+    uint8_t NumberOfFrames()
+    {
+        return _number_of_frames;
+    }
+    void NumberOfFrames(uint8_t number_of_frames)
+    {
+        _number_of_frames = number_of_frames;
+    }
+
+    std::vector<uint8_t>& ExtensionsData()
+    {
+        return _extensions_data;
+    }
+
+protected:
+    uint32_t _data_format;
+    uint16_t _data_reference_index;
+    uint32_t _flags;
+    uint32_t _time_scale;
+    uint32_t _frame_duration;
+    uint8_t _number_of_frames;
+
+    std::vector<uint8_t> _extensions_data;
+};
+
+class TinyMovTrackMediaSampleDescriptionTable
+{
+public:
+    std::vector<TinyMovTrackMediaVideoDescription>& VideoDescriptionTable()
+    {
+        return _video_description_table;
+    }
+
+    std::vector<TinyMovTrackMediaAudioDescription>& AudioDescriptionTable()
+    {
+        return _audio_description_table;
+    }
+
+    std::vector<TinyMovTrackMediaTimecodeDescription>& TimecodeDescriptionTable()
+    {
+        return _timecode_description_table;
+    }
+
+protected:
+    std::vector<TinyMovTrackMediaVideoDescription> _video_description_table;
+    std::vector<TinyMovTrackMediaAudioDescription> _audio_description_table;
+    std::vector<TinyMovTrackMediaTimecodeDescription> _timecode_description_table;
+};
+
+class TinyMovTrackTimeToSampleInfo
+{
+public:
+    struct Info_t
+    {
+        uint32_t sample_count;
+        uint32_t sample_duration;
+    };
+    std::vector<Info_t>& Entries()
+    {
+        return _entries;
+    }
+
+protected:
+    std::vector<Info_t> _entries;
+};
+
+class TinyMovTrackSampleToChunkInfo
+{
+public:
+    struct Info_t
+    {
+        uint32_t first_chunk;
+        uint32_t samples_per_chunk;
+        uint32_t sample_description_id;
+    };
+    std::vector<Info_t>& Entries()
+    {
+        return _entries;
+    }
+
+protected:
+    std::vector<Info_t> _entries;
+};
+
+class TinyMovTrackDataInfo
+{
+public:
+    struct DataReferenceEntry_t
+    {
+        uint32_t type;
+        uint32_t version_and_flags;
+        std::vector<uint8_t> data;
+    };
+    std::vector<DataReferenceEntry_t>& Entries()
+    {
+        return _entries;
+    }
+
+protected:
+    std::vector<DataReferenceEntry_t> _entries;
 };
 
 class TinyMovTrackMedia;
 class TinyMovTrackMediaInfo
 {
 public:
-    TinyMovTrackMediaInfo(TinyMovTrackMedia& parent) : _parent(parent) {}
+    TinyMovTrackMediaInfo(TinyMovTrackMedia& parent)
+        : _parent(parent), _forced_sample_size(0) {}
+
+    uint32_t ForcedSampleSize()
+    {
+        return _forced_sample_size;
+    }
+    void ForcedSampleSize(uint32_t forced_sample_size)
+    {
+        _forced_sample_size = forced_sample_size;
+    }
 
     std::vector<uint64_t>& SampleSizes()
     {
         return _sample_sizes;
     }
-    std::vector<uint64_t>& SampleOffsets()
+    std::vector<uint64_t>& ChunkOffsets()
     {
-        return _sample_offsets;
+        return _chunk_offsets;
     }
 
-    bool IsOk()
+    TinyMovTrackMediaSampleDescriptionTable& DescriptionTable()
     {
-        if (SampleSizes().size() != SampleOffsets().size())
-            return false;
+        return _description_table;
+    }
 
-        return true;
+    TinyMovTrackTimeToSampleInfo& TimeToSample()
+    {
+        return _time_to_sample_info;
+    }
+
+    TinyMovTrackDataInfo& DataInfo()
+    {
+        return _data_info;
+    }
+
+    TinyMovTrackSampleToChunkInfo& SampleToChunk()
+    {
+        return _sample_to_chunk_info;
+    }
+
+    TinyMovHandlerInfo& Handler()
+    {
+        return _hdlr;
     }
 
     TinyMovTrackMedia& Parent()
@@ -133,7 +677,15 @@ public:
 
 protected:
     std::vector<uint64_t> _sample_sizes;
-    std::vector<uint64_t> _sample_offsets;
+    std::vector<uint64_t> _chunk_offsets;
+    uint32_t _forced_sample_size;
+
+    TinyMovTrackMediaSampleDescriptionTable _description_table;
+    TinyMovTrackTimeToSampleInfo _time_to_sample_info;
+    TinyMovTrackDataInfo _data_info;
+    TinyMovTrackSampleToChunkInfo _sample_to_chunk_info;
+
+    TinyMovHandlerInfo _hdlr;
 
     TinyMovTrackMedia& _parent;
 };
@@ -206,9 +758,28 @@ public:
         return _quality;
     }
 
+    TinyMovHandlerInfo& Handler()
+    {
+        return _hdlr;
+    }
     TinyMovTrackMediaInfo& Info()
     {
         return _info;
+    }
+
+    enum Type_t {Video, Audio, Timecode, Unknown};
+    Type_t Type()
+    {
+        switch (Handler().ComponentSubType())
+        {
+        case MKTAG('v', 'i', 'd', 'e'):
+            return Video;
+        case MKTAG('s', 'o', 'u', 'n'):
+            return Audio;
+        case MKTAG('t', 'm', 'c', 'd'):
+            return Timecode;
+        }
+        return Unknown;
     }
 
     TinyMovTrack& Parent()
@@ -226,6 +797,7 @@ protected:
     uint16_t _language;
     uint16_t _quality;
 
+    TinyMovHandlerInfo _hdlr;
     TinyMovTrackMediaInfo _info;
 
     TinyMovTrack& _parent;
@@ -364,6 +936,38 @@ protected:
     TinyMovFile& _parent;
 };
 
+class TinyMovFileCompatibilityInfo
+{
+public:
+    uint32_t MajorBrand()
+    {
+        return _major_brand;
+    }
+    void MajorBrand(uint32_t major_brand)
+    {
+        _major_brand = major_brand;
+    }
+
+    uint32_t MinorBrand()
+    {
+        return _minor_brand;
+    }
+    void MinorBrand(uint32_t minor_brand)
+    {
+        _minor_brand = minor_brand;
+    }
+
+    std::vector<uint32_t>& CompatibleBrands()
+    {
+        return _compatible_brands;
+    }
+
+protected:
+    uint32_t _major_brand;
+    uint32_t _minor_brand;
+    std::vector<uint32_t> _compatible_brands;
+};
+
 class TinyMovFile
 {
 public:
@@ -374,6 +978,11 @@ public:
     TinyMovMetadata& Metadata()
     {
         return _metadata;
+    }
+
+    TinyMovFileCompatibilityInfo& CompatibilityInfo()
+    {
+        return _compatibility_info;
     }
 
     struct DisplayMatrix_t
@@ -449,6 +1058,14 @@ public:
     {
         return _display_matrix;
     }
+    void PreviewTime(uint32_t preview_time)
+    {
+        _preview_time = preview_time;
+    }
+    uint32_t PreviewTime()
+    {
+        return _preview_time;
+    }
     void PreviewDuration(uint32_t preview_duration)
     {
         _preview_duration = preview_duration;
@@ -510,6 +1127,7 @@ protected:
     std::vector<TinyMovTrack> _tracks;
     TinyMovMetadata _metadata;
     std::string _path;
+    TinyMovFileCompatibilityInfo _compatibility_info;
 
     // Movie Header
     Flags_t _flags;
@@ -520,6 +1138,7 @@ protected:
     uint32_t _preferred_rate;
     uint16_t _preferred_volume;
     DisplayMatrix_t _display_matrix;
+    uint32_t _preview_time;
     uint32_t _preview_duration;
     uint32_t _poster_time;
     uint32_t _selection_time;
@@ -762,7 +1381,9 @@ public:
 
         // Update parent atom info
         _atom_offsets_stack.pop();
-        _atom_offsets_stack.top() += atom_size;
+
+        if (_atom_offsets_stack.size() > 0)
+            _atom_offsets_stack.top() += atom_size;
     }
 
     void write_mdat_sample(void* src, uint32_t size)
@@ -834,17 +1455,19 @@ public:
             return false;
         }
 
-        uint32_t major = stream.get_le32();
-        uint32_t minor = stream.get_be32();
+        mov.CompatibilityInfo().MajorBrand(stream.get_le32());
+        mov.CompatibilityInfo().MinorBrand(stream.get_le32());
+        mov.CompatibilityInfo().CompatibleBrands().clear();
 
-        char name[5];
-        *(uint32_t*)name = major;
-        name[4] = '\0';
+        auto count = stream.atom_left() / 4;
+        for (int i = 0; i < count; ++i)
+        {
+            auto brand = stream.get_le32();
+            if (brand != 0)
+                mov.CompatibilityInfo().CompatibleBrands().push_back(brand);
+        }
 
-        //std::cout << "major " << name << std::endl;
-        //std::cout << "minor " << minor << std::endl;
-
-        // Skip other
+        // Skip garbage
         stream.seekg(stream.atom_left());
 
         return true;
@@ -854,10 +1477,14 @@ public:
         stream.push_atom(Type());
 
         // major
-        stream.put_le32(MKTAG('q', 't', ' ', ' '));
+        stream.put_le32(mov.CompatibilityInfo().MajorBrand());
 
         // minor
-        stream.put_le32(MKTAG(0x20, 0x04, 0x06, 0x00));
+        stream.put_le32(mov.CompatibilityInfo().MinorBrand());
+
+        // compatible brands
+        for (auto it = mov.CompatibilityInfo().CompatibleBrands().begin(); it != mov.CompatibilityInfo().CompatibleBrands().end(); ++it)
+            stream.put_le32(*it);
 
         stream.pop_atom();
         return true;
@@ -974,6 +1601,7 @@ public:
         }
         mov.DisplayMatrix(display_matrix);
 
+        mov.PreviewTime(stream.get_be32());
         mov.PreviewDuration(stream.get_be32());
         mov.PosterTime(stream.get_be32());
         mov.SelectionTime(stream.get_be32());
@@ -1015,6 +1643,7 @@ public:
             stream.put_be32(display_matrix.values[i][2]);
         }
         
+        stream.put_be32(mov.PreviewTime());
         stream.put_be32(mov.PreviewDuration());
         stream.put_be32(mov.PosterTime());
         stream.put_be32(mov.SelectionTime());
@@ -1165,7 +1794,7 @@ public:
         
         stream.get_current_track().Media().TimeScale(stream.get_be32());
 
-        stream.get_current_track().Duration(
+        stream.get_current_track().Media().Duration(
             (version == 1) ?
             stream.get_be64() :
             stream.get_be32());
@@ -1210,6 +1839,573 @@ public:
     }
 } TinyMovFileAtomProcessor_mdhd;
 
+class
+{
+public:
+    bool ProcessRead(fstream_in_wrapper& stream, TinyMovTrackMediaVideoDescription& vdesc)
+    {
+        // reserved
+        for (int i = 0; i < 6; ++i)
+            stream.get_byte();
+
+        // data reference index
+        vdesc.DataReferenceIndex(stream.get_be16());
+
+        // version
+        vdesc.Version(stream.get_be16());
+
+        // revision level
+        vdesc.RevisionLevel(stream.get_be16());
+
+        // vendor
+        vdesc.Vendor(stream.get_be32());
+
+        // temporal quality
+        vdesc.TemporalQuality(stream.get_be32());
+
+        // spatial quality
+        vdesc.SpatialQuality(stream.get_be32());
+
+        // width
+        vdesc.Width(stream.get_be16());
+
+        // height
+        vdesc.Height(stream.get_be16());
+
+        // horizontal resolution (fixed-point)
+        vdesc.HorizontalResolution(stream.get_be32());
+
+        // vertical resolution (fixed-point)
+        vdesc.VerticalResolution(stream.get_be32());
+
+        // data size
+        auto data_size = stream.get_be32();
+        if (data_size != 0)
+            return false;
+
+        // frame count
+        vdesc.FrameCount(stream.get_be16());
+
+        // str_len
+        auto str_len = stream.get_byte();
+        if (str_len > 31)
+            str_len = 31;
+
+        // compressor name
+        for (int i = 0; i < 31; ++i)
+            stream.get_byte();
+
+        // depth
+        vdesc.Depth(stream.get_be16());
+
+        // color table id
+        vdesc.ColorTableId(stream.get_be16());
+
+        return true;
+    }
+
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrackMediaVideoDescription& vdesc)
+    {
+        // reserved
+        for (int i = 0; i < 6; ++i)
+            stream.put_byte(0);
+
+        // data reference index
+        stream.put_be16(vdesc.DataReferenceIndex());
+
+        // version
+        stream.put_be16(vdesc.Version());
+
+        // revision level
+        stream.put_be16(vdesc.RevisionLevel());
+
+        // vendor
+        stream.put_be32(vdesc.Vendor());
+
+        // temporal quality
+        stream.put_be32(vdesc.TemporalQuality());
+
+        // spatial quality
+        stream.put_be32(vdesc.SpatialQuality());
+
+        // width
+        stream.put_be16(vdesc.Width());
+
+        // height
+        stream.put_be16(vdesc.Height());
+
+        // horizontal resolution (fixed-point)
+        stream.put_be32(vdesc.HorizontalResolution());
+
+        // vertical resolution (fixed-point)
+        stream.put_be32(vdesc.VerticalResolution());
+
+        // data size
+        stream.put_be32(0);
+
+        // frame count
+        stream.put_be16(vdesc.FrameCount());
+
+        // str_len
+        auto str_len = vdesc.CompressorName().size();
+        if (str_len > 31)
+            str_len = 31;
+        stream.put_byte(str_len);
+        stream.write((char*)vdesc.CompressorName().c_str(), str_len);
+        for (int i = str_len; i < 31; ++i)
+            stream.put_byte(0);
+
+        // depth
+        stream.put_be16(vdesc.Depth());
+
+        // color table id
+        stream.put_be16(vdesc.ColorTableId());
+
+        return true;
+    }
+} TinyMovVideoDescriptionTableProcessor;
+
+class
+{
+public:
+    bool ProcessRead(fstream_in_wrapper& stream, TinyMovTrackMediaAudioDescription& adesc)
+    {
+        // reserved
+        for (int i = 0; i < 6; ++i)
+            stream.get_byte();
+
+        // data reference index
+        adesc.DataReferenceIndex(stream.get_be16());
+
+        // version
+        adesc.Version(stream.get_be16());
+
+        // revision level
+        adesc.RevisionLevel(stream.get_be16());
+
+        // vendor
+        adesc.Vendor(stream.get_be32());
+
+        // number of channels
+        adesc.NumberOfChannels(stream.get_be16());
+
+        // sample size
+        adesc.SampleSize(stream.get_be16());
+
+        // compression id
+        adesc.CompressionId(stream.get_be16());
+
+        // packet size
+        adesc.PacketSize(stream.get_be16());
+
+        // sample rate (fixed-point)
+        adesc.SampleRate(stream.get_be32());
+
+        return true;
+    }
+
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrackMediaAudioDescription& adesc)
+    {
+        // reserved
+        for (int i = 0; i < 6; ++i)
+            stream.put_byte(0);
+
+        // data reference index
+        stream.put_be16(adesc.DataReferenceIndex());
+
+        // version
+        stream.put_be16(adesc.Version());
+
+        // revision level
+        stream.put_be16(adesc.RevisionLevel());
+
+        // vendor
+        stream.put_be32(adesc.Vendor());
+
+        // number of channels
+        stream.put_be16(adesc.NumberOfChannels());
+
+        // sample size
+        stream.put_be16(adesc.SampleSize());
+
+        // compression id
+        stream.put_be16(adesc.CompressionId());
+
+        // packet size
+        stream.put_be16(adesc.PacketSize());
+
+        // sample rate (fixed-point)
+        stream.put_be32(adesc.SampleRate());
+
+        return true;
+    }
+} TinyMovAudioDescriptionTableProcessor;
+
+class
+{
+public:
+    bool ProcessRead(fstream_in_wrapper& stream, TinyMovTrackMediaTimecodeDescription& tdesc)
+    {
+        // reserved
+        for (int i = 0; i < 6; ++i)
+            stream.get_byte();
+
+        // data reference index
+        tdesc.DataReferenceIndex(stream.get_be16());
+
+        // reserved
+        stream.get_be32();
+
+        // flags
+        tdesc.Flags(stream.get_be32());
+
+        // time scale
+        tdesc.TimeScale(stream.get_be32());
+
+        // frame duration
+        tdesc.FrameDuration(stream.get_be32());
+
+        // number of frames
+        tdesc.NumberOfFrames(stream.get_byte());
+
+        // reserved
+        stream.get_byte();
+
+        return true;
+    }
+
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrackMediaTimecodeDescription& tdesc)
+    {
+        // reserved
+        for (int i = 0; i < 6; ++i)
+            stream.put_byte(0);
+
+        // data reference index
+        stream.put_be16(tdesc.DataReferenceIndex());
+
+        // reserved
+        stream.put_be32(0);
+
+        // flags
+        stream.put_be32(tdesc.Flags());
+
+        // time scale
+        stream.put_be32(tdesc.TimeScale());
+
+        // frame duration
+        stream.put_be32(tdesc.FrameDuration());
+
+        // number of frames
+        stream.put_byte(tdesc.NumberOfFrames());
+
+        // reserved
+        stream.put_byte(0);
+
+        return true;
+    }
+} TinyMovTimecodeDescriptionTableProcessor;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('s', 't', 's', 'd');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('s', 't', 'b', 'l'))
+        {
+            std::cout << "Warning! Parent is not stbl!" << std::endl;
+            return false;
+        }
+
+        uint8_t version = stream.get_byte();
+
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+
+        uint32_t entries = stream.get_be32();
+
+        auto& table = stream.get_current_track().Media().Info().DescriptionTable();
+
+        for (int i = 0; i < entries; ++i)
+        {
+            uint32_t sz = stream.get_be32();
+            uint32_t data_format = stream.get_le32();
+
+            stream.push_atom(sz - 8, data_format);
+
+            switch (stream.get_current_track().Media().Type())
+            {
+            case TinyMovTrackMedia::Type_t::Video:
+                // Parse Video Description Table
+                {
+                    TinyMovTrackMediaVideoDescription vdesc;
+                    vdesc.DataFormat(data_format);
+                    TinyMovVideoDescriptionTableProcessor.ProcessRead(stream, vdesc);
+                    
+                    // Save extensions
+                    auto ext_sz = stream.atom_left();
+                    vdesc.ExtensionsData().resize(ext_sz);
+                    stream.read(vdesc.ExtensionsData().data(), ext_sz);
+
+                    table.VideoDescriptionTable().push_back(vdesc);
+                }
+                break;
+
+            case TinyMovTrackMedia::Type_t::Audio:
+                // Parse Video Description Table
+                {
+                    TinyMovTrackMediaAudioDescription adesc;
+                    adesc.DataFormat(data_format);
+                    TinyMovAudioDescriptionTableProcessor.ProcessRead(stream, adesc);
+                    
+                    // Save extensions
+                    auto ext_sz = stream.atom_left();
+                    adesc.ExtensionsData().resize(ext_sz);
+                    stream.read(adesc.ExtensionsData().data(), ext_sz);
+
+                    table.AudioDescriptionTable().push_back(adesc);
+                }
+                break;
+
+            case TinyMovTrackMedia::Type_t::Timecode:
+                // Parse Timecode Description Table
+                {
+                    TinyMovTrackMediaTimecodeDescription tdesc;
+                    tdesc.DataFormat(data_format);
+                    TinyMovTimecodeDescriptionTableProcessor.ProcessRead(stream, tdesc);
+                    
+                    // Save extensions
+                    auto ext_sz = stream.atom_left();
+                    tdesc.ExtensionsData().resize(ext_sz);
+                    stream.read(tdesc.ExtensionsData().data(), ext_sz);
+
+                    table.TimecodeDescriptionTable().push_back(tdesc);
+                }
+                break;
+
+            default:
+                // Skip data
+                stream.seekg(stream.atom_left());
+                break;
+            }
+
+            stream.pop_atom();
+        }
+
+        return true;
+    }
+
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        auto& table = track.Media().Info().DescriptionTable();
+
+        switch (track.Media().Type())
+        {
+        case TinyMovTrackMedia::Type_t::Video:
+            {
+                // entries (count)
+                stream.put_be32(table.VideoDescriptionTable().size());
+
+                for (auto it = table.VideoDescriptionTable().begin(); it != table.VideoDescriptionTable().end(); ++it)
+                {
+                    stream.push_atom(it->DataFormat());
+
+                    // Write table
+                    TinyMovVideoDescriptionTableProcessor.ProcessWrite(stream, *it);
+
+                    // Write extensions
+                    stream.write(it->ExtensionsData().data(), it->ExtensionsData().size());
+
+                    stream.pop_atom();
+                }
+                break;
+            }
+        case TinyMovTrackMedia::Type_t::Audio:
+            {
+                // entries (count)
+                stream.put_be32(table.AudioDescriptionTable().size());
+
+                for (auto it = table.AudioDescriptionTable().begin(); it != table.AudioDescriptionTable().end(); ++it)
+                {
+                    stream.push_atom(it->DataFormat());
+
+                    // Write table
+                    TinyMovAudioDescriptionTableProcessor.ProcessWrite(stream, *it);
+
+                    // Write extensions
+                    stream.write(it->ExtensionsData().data(), it->ExtensionsData().size());
+
+                    stream.pop_atom();
+                }
+                break;
+            }
+        case TinyMovTrackMedia::Type_t::Timecode:
+            {
+                // entries (count)
+                stream.put_be32(table.TimecodeDescriptionTable().size());
+
+                for (auto it = table.TimecodeDescriptionTable().begin(); it != table.TimecodeDescriptionTable().end(); ++it)
+                {
+                    stream.push_atom(it->DataFormat());
+
+                    // Write table
+                    TinyMovTimecodeDescriptionTableProcessor.ProcessWrite(stream, *it);
+
+                    // Write extensions
+                    stream.write(it->ExtensionsData().data(), it->ExtensionsData().size());
+
+                    stream.pop_atom();
+                }
+                break;
+            }
+        }
+
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_stsd;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('s', 't', 't', 's');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('s', 't', 'b', 'l'))
+        {
+            std::cout << "Warning! Parent is not stbl!" << std::endl;
+            return false;
+        }
+
+        uint8_t version = stream.get_byte();
+
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+
+        uint32_t entries = stream.get_be32();
+        
+        for (int i = 0; i < entries; ++i)
+        {
+            TinyMovTrackTimeToSampleInfo::Info_t tts_info;
+            tts_info.sample_count = stream.get_be32();
+            tts_info.sample_duration = stream.get_be32();
+
+            stream.get_current_track().Media().Info().TimeToSample().Entries().push_back(tts_info);
+        }
+
+        return true;
+    }
+
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // entries (count)
+        stream.put_be32(track.Media().Info().TimeToSample().Entries().size());
+
+        for (auto it = track.Media().Info().TimeToSample().Entries().begin(); it != track.Media().Info().TimeToSample().Entries().end(); ++it)
+        {
+            stream.put_be32(it->sample_count);
+            stream.put_be32(it->sample_duration);
+        }
+
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_stts;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('s', 't', 's', 'c');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('s', 't', 'b', 'l'))
+        {
+            std::cout << "Warning! Parent is not stbl!" << std::endl;
+            return false;
+        }
+
+        uint8_t version = stream.get_byte();
+
+        uint8_t flags[3];
+        flags[0] = stream.get_byte();
+        flags[1] = stream.get_byte();
+        flags[2] = stream.get_byte();
+
+        uint32_t entries = stream.get_be32();
+        
+        for (int i = 0; i < entries; ++i)
+        {
+            TinyMovTrackSampleToChunkInfo::Info_t tts_info;
+            tts_info.first_chunk = stream.get_be32();
+            tts_info.samples_per_chunk = stream.get_be32();
+            tts_info.sample_description_id = stream.get_be32();
+
+            stream.get_current_track().Media().Info().SampleToChunk().Entries().push_back(tts_info);
+        }
+
+        return true;
+    }
+
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // entries (count)
+        stream.put_be32(track.Media().Info().SampleToChunk().Entries().size());
+
+        for (auto it = track.Media().Info().SampleToChunk().Entries().begin(); it != track.Media().Info().SampleToChunk().Entries().end(); ++it)
+        {
+            stream.put_be32(it->first_chunk);
+            stream.put_be32(it->samples_per_chunk);
+            stream.put_be32(it->sample_description_id);
+        }
+
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_stsc;
+
 class : public TinyMovFileAtomProcessorBase
 {
 public:
@@ -1233,11 +2429,13 @@ public:
         flags[2] = stream.get_byte();
 
         uint32_t sample_size = stream.get_be32();
+        stream.get_current_track().Media().Info().ForcedSampleSize(sample_size);
 
         uint32_t entries = stream.get_be32();
         if (!entries)
             return true;
 
+        // If sample size is forced, we do not read a list
         if (sample_size)
             return true;
 
@@ -1260,13 +2458,15 @@ public:
         stream.put_byte(0);
 
         // sample size
-        stream.put_be32(0);     // 0 because we always are ready for different sizes
+        stream.put_be32(track.Media().Info().ForcedSampleSize());
 
         // entries (count)
         stream.put_be32(track.Media().Info().SampleSizes().size());
 
-        for (auto it = track.Media().Info().SampleSizes().begin(); it != track.Media().Info().SampleSizes().end(); ++it)
-            stream.put_be32(*it);
+        // We write list only if sample size is not forced before
+        if (track.Media().Info().ForcedSampleSize() == 0)
+            for (auto it = track.Media().Info().SampleSizes().begin(); it != track.Media().Info().SampleSizes().end(); ++it)
+                stream.put_be32(*it);
 
         stream.pop_atom();
         return true;
@@ -1300,7 +2500,7 @@ public:
             return true;
 
         for (int i = 0; i < entries; ++i)
-            stream.get_current_track().Media().Info().SampleOffsets().push_back(stream.get_be32());
+            stream.get_current_track().Media().Info().ChunkOffsets().push_back(stream.get_be32());
 
         return true;
     }
@@ -1318,26 +2518,57 @@ public:
         stream.put_byte(0);
 
         // entries (count)
-        stream.put_be32(track.Media().Info().SampleSizes().size());
+        stream.put_be32(track.Media().Info().ChunkOffsets().size());
 
-        for (int i = 0; i < track.Media().Info().SampleSizes().size(); ++i)
+        for (int i = 0; i < track.Media().Info().ChunkOffsets().size(); ++i)
         {
-            auto& sample_offset = track.Media().Info().SampleOffsets()[i];
-            auto& sample_size = track.Media().Info().SampleSizes()[i];
+            uint32_t begin_sample_index = 0;
+            uint32_t end_sample_index = track.Media().Info().SampleSizes().size();
 
-            // Get offset of new sample
-            uint64_t offset = stream.tellp_mdat();
+            if (track.Media().Info().SampleToChunk().Entries().size() > 0)
+            {
+                end_sample_index = 0;
 
+                auto it = track.Media().Info().SampleToChunk().Entries().begin();
+                do
+                {
+                    begin_sample_index = end_sample_index;
+                    end_sample_index += it->samples_per_chunk;
+
+                    ++it;
+
+                    if (it == track.Media().Info().SampleToChunk().Entries().end())
+                        break;
+
+                } while (i + 1 >= it->first_chunk);
+            }
+
+            // Now we need to calculate chunk size (it equals to sum of all sample sizes in this chunk)
+            uint64_t chunk_size = 0;
+            for (int p = begin_sample_index; p < end_sample_index; ++p)
+            {
+                auto sample_size = (track.Media().Info().ForcedSampleSize() != 0) ?
+                    track.Media().Info().ForcedSampleSize() :
+                    track.Media().Info().SampleSizes()[p];
+                
+                chunk_size += sample_size;
+            }
+            
+            // Read data from the original file
             std::fstream f_in(track.Parent().Path(), std::ios::in | std::ios::binary);
             if (!f_in.is_open())
                 return false;
 
-            std::vector<uint8_t> tmp_sample_data(sample_size);
+            std::vector<uint8_t> tmp_sample_data(chunk_size);
 
-            f_in.seekg(sample_offset);
-            f_in.read((char*)tmp_sample_data.data(), sample_size);
+            auto chunk_offset = track.Media().Info().ChunkOffsets()[i];
+            f_in.seekg(chunk_offset);
+            f_in.read((char*)tmp_sample_data.data(), chunk_size);
 
             f_in.close();
+
+            // Get offset of new sample
+            uint64_t offset = stream.tellp_mdat();
 
             // Write sample
             stream.write_mdat_sample(tmp_sample_data.data(), tmp_sample_data.size());
@@ -1371,9 +2602,17 @@ public:
     {
         stream.push_atom(Type());
 
-        // stsd
-        // stts
-        // stsc
+        // Add 'stsd' atom
+        if (!TinyMovFileAtomProcessor_stsd.ProcessWrite(stream, track))
+            return false;
+
+        // Add 'stts' atom
+        if (!TinyMovFileAtomProcessor_stts.ProcessWrite(stream, track))
+            return false;
+
+        // Add 'stsc' atom
+        if (!TinyMovFileAtomProcessor_stsc.ProcessWrite(stream, track))
+            return false;
         
         // Add 'stsz' atom
         if (!TinyMovFileAtomProcessor_stsz.ProcessWrite(stream, track))
@@ -1387,6 +2626,516 @@ public:
         return true;
     }
 } TinyMovFileAtomProcessor_stbl;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('h', 'd', 'l', 'r');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        if (stream.atom_parent_id() != MKTAG('m', 'e', 't', 'a') &&
+            stream.atom_parent_id() != MKTAG('m', 'd', 'i', 'a') &&
+            stream.atom_parent_id() != MKTAG('m', 'i', 'n', 'f'))
+        {
+            std::cout << "Warning! Parent is not meta or mdia!" << std::endl;
+            return false;
+        }
+
+        TinyMovHandlerInfo* hdlr = nullptr;
+        switch (stream.atom_parent_id())
+        {
+        case MKTAG('m', 'e', 't', 'a'):
+            hdlr = &mov.Metadata().Handler();
+            break;
+
+        case MKTAG('m', 'd', 'i', 'a'):
+            hdlr = &stream.get_current_track().Media().Handler();
+            break;
+
+        case MKTAG('m', 'i', 'n', 'f'):
+            hdlr = &stream.get_current_track().Media().Info().Handler();
+            break;
+
+        default:
+            std::cout << "Warning! Parent is not meta or mdia or minf!" << std::endl;
+            return false;
+        }
+
+        // version
+        stream.get_byte();
+
+        // flags
+        stream.get_byte();
+        stream.get_byte();
+        stream.get_byte();
+
+        // component type
+        hdlr->ComponentType(stream.get_be32());
+
+        // component sub-type
+        hdlr->ComponentSubType(stream.get_le32());
+
+        // component manufacturer
+        hdlr->ComponentManufacturer(stream.get_be32());
+
+        // component flags
+        hdlr->ComponentFlags(stream.get_be32());
+
+        // component flags mask
+        hdlr->ComponentFlagsMask(stream.get_be32());
+
+        // component name
+        auto name_len = stream.get_byte();
+        auto ptr = new char[name_len + 1];
+        stream.read(ptr, name_len);
+        ptr[name_len] = '\0';
+        hdlr->ComponentName(std::string(ptr));
+        delete[] ptr;
+
+        hdlr->Enabled(true);
+
+        return true;
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovHandlerInfo& hdlr)
+    {
+        stream.push_atom(Type());
+        
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // component type
+        stream.put_be32(hdlr.ComponentType());
+
+        // component sub-type
+        stream.put_le32(hdlr.ComponentSubType());
+
+        // component manufacturer
+        stream.put_be32(hdlr.ComponentManufacturer());
+
+        // component flags
+        stream.put_be32(hdlr.ComponentFlags());
+
+        // component flags mask
+        stream.put_be32(hdlr.ComponentFlagsMask());
+
+        // component name
+        stream.put_byte(hdlr.ComponentName().size());
+        stream.write((char*)hdlr.ComponentName().c_str(), hdlr.ComponentName().size());
+
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_hdlr;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('d', 'r', 'e', 'f');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        TinyMovTrackDataInfo& dinf = stream.get_current_track().Media().Info().DataInfo();
+
+        // version
+        stream.get_byte();
+
+        // flags
+        stream.get_byte();
+        stream.get_byte();
+        stream.get_byte();
+
+        // entries
+        auto entries = stream.get_be32();
+
+        for (int i = 0; i < entries; ++i)
+        {
+            int64_t size = stream.get_be32();
+            uint32_t type = stream.get_le32();
+
+            stream.push_atom(size - 8, type);
+
+            TinyMovTrackDataInfo::DataReferenceEntry_t entry;
+            entry.type = type;
+            entry.version_and_flags = stream.get_be32();
+
+            auto sz = stream.atom_left();
+            entry.data.resize(sz);
+            stream.read(entry.data.data(), sz);
+
+            dinf.Entries().push_back(entry);
+
+            stream.pop_atom();
+        }
+
+        return true;
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrackDataInfo& dinf)
+    {
+        stream.push_atom(Type());
+
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // entries
+        stream.put_be32(dinf.Entries().size());
+
+        for (auto it = dinf.Entries().begin(); it != dinf.Entries().end(); ++it)
+        {
+            stream.push_atom(it->type);
+
+            // version and flags
+            stream.put_be32(it->version_and_flags);
+
+            // data
+            stream.write(it->data.data(), it->data.size());
+
+            stream.pop_atom();
+        }
+
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_dref;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('d', 'i', 'n', 'f');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrackDataInfo& dinf)
+    {
+        stream.push_atom(Type());
+        auto res = TinyMovFileAtomProcessor_dref.ProcessWrite(stream, dinf);
+        stream.pop_atom();
+        return res;
+    }
+} TinyMovFileAtomProcessor_dinf;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('v', 'm', 'h', 'd');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        // version
+        stream.get_byte();
+
+        // flags
+        stream.get_byte();
+        stream.get_byte();
+        stream.get_byte();
+
+        // graphics mode
+        stream.get_be16();
+
+        // opcolor
+        stream.get_be16();
+        stream.get_be16();
+        stream.get_be16();
+
+        return true;
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+        
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // graphics mode
+        stream.put_be16(0);
+
+        // opcolor
+        stream.put_be16(0);
+        stream.put_be16(0);
+        stream.put_be16(0);
+        
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_vmhd;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('s', 'm', 'h', 'd');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        // version
+        stream.get_byte();
+
+        // flags
+        stream.get_byte();
+        stream.get_byte();
+        stream.get_byte();
+
+        // balance
+        stream.get_be16();
+
+        // reserved
+        stream.get_be16();
+
+        return true;
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+        
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // balance
+        stream.put_be16(0);
+
+        // reserved
+        stream.put_be16(0);
+        
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_smhd;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('g', 'm', 'i', 'n');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        // version
+        stream.get_byte();
+
+        // flags
+        stream.get_byte();
+        stream.get_byte();
+        stream.get_byte();
+
+        // graphics mode
+        stream.get_be16();
+
+        // opcolor
+        stream.get_be16();
+        stream.get_be16();
+        stream.get_be16();
+
+        // balance
+        stream.get_be16();
+
+        // reserved
+        stream.get_be16();
+
+        return true;
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+        
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // graphics mode
+        stream.put_be16(64);
+
+        // opcolor
+        stream.put_be16(32768);
+        stream.put_be16(32768);
+        stream.put_be16(32768);
+
+        // balance
+        stream.put_be16(0);
+
+        // reserved
+        stream.put_be16(0);
+        
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_gmin;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('t', 'c', 'm', 'i');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        // version
+        stream.get_byte();
+
+        // flags
+        stream.get_byte();
+        stream.get_byte();
+        stream.get_byte();
+
+        // text font
+        stream.get_be16();
+
+        // text face
+        stream.get_be16();
+
+        // text size
+        stream.get_be16();
+
+        // text color
+        stream.get_be16();
+        stream.get_be16();
+        stream.get_be16();
+
+        // background color
+        stream.get_be16();
+        stream.get_be16();
+        stream.get_be16();
+
+        // reserved
+        stream.get_be16();
+
+        // font name size
+        auto fns = stream.get_byte();
+        stream.seekg(fns);
+
+        return true;
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+        
+        // version
+        stream.put_byte(0);
+
+        // flags
+        stream.put_byte(0);
+        stream.put_byte(0);
+        stream.put_byte(0);
+
+        // text font
+        stream.put_be16(0);
+
+        // text face
+        stream.put_be16(0);
+
+        // text size
+        stream.put_be16(12);
+
+        // text color
+        stream.put_be16(0x0000);
+        stream.put_be16(0xFFFF);
+        stream.put_be16(0xFFFF);
+
+        // background color
+        stream.put_be16(0xFFFF);
+        stream.put_be16(0x0000);
+        stream.put_be16(0x0000);
+
+        // reserved
+        stream.put_be16(0);
+
+        std::string font_name = "System";
+
+        // font name size
+        stream.put_byte(font_name.size());
+
+        // font name
+        stream.write((char*)font_name.c_str(), font_name.size());
+        
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_tcmi;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('t', 'm', 'c', 'd');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+
+        if (!TinyMovFileAtomProcessor_tcmi.ProcessWrite(stream, track))
+            return false;
+        
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_tmcd;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
+    virtual uint32_t Type()
+    {
+        return MKTAG('g', 'm', 'h', 'd');
+    }
+    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+    {
+        return TinyMovFileAtomProcessor_default.ProcessRead(stream, mov);
+    }
+    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+    {
+        stream.push_atom(Type());
+        
+        if (!TinyMovFileAtomProcessor_gmin.ProcessWrite(stream, track))
+            return false;
+
+        if (!TinyMovFileAtomProcessor_tmcd.ProcessWrite(stream, track))
+            return false;
+        
+        stream.pop_atom();
+        return true;
+    }
+} TinyMovFileAtomProcessor_gmhd;
 
 class : public TinyMovFileAtomProcessorBase
 {
@@ -1408,8 +3157,36 @@ public:
     bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
     {
         stream.push_atom(Type());
+        
+        switch (track.Media().Type())
+        {
+        case TinyMovTrackMedia::Type_t::Video:
+            if (!TinyMovFileAtomProcessor_vmhd.ProcessWrite(stream, track))
+                return false;
+            break;
 
-        // ...
+        case TinyMovTrackMedia::Type_t::Audio:
+            if (!TinyMovFileAtomProcessor_smhd.ProcessWrite(stream, track))
+                return false;
+            break;
+
+        case TinyMovTrackMedia::Type_t::Timecode:
+            if (!TinyMovFileAtomProcessor_gmhd.ProcessWrite(stream, track))
+                return false;
+            break;
+
+        default:
+            break;
+        }
+
+        // Add 'hdlr' atom
+        if (track.Media().Info().Handler().Enabled())
+            if (!TinyMovFileAtomProcessor_hdlr.ProcessWrite(stream, track.Media().Info().Handler()))
+                return false;
+        
+        // Add 'dinf' atom
+        if (!TinyMovFileAtomProcessor_dinf.ProcessWrite(stream, track.Media().Info().DataInfo()))
+            return false;
 
         // Add 'stbl' atom
         if (!TinyMovFileAtomProcessor_stbl.ProcessWrite(stream, track))
@@ -1445,6 +3222,11 @@ public:
         // Add 'mdhd' atom
         if (!TinyMovFileAtomProcessor_mdhd.ProcessWrite(stream, track))
             return false;
+
+        // Add 'hdlr' atom
+        if (track.Media().Handler().Enabled())
+            if (!TinyMovFileAtomProcessor_hdlr.ProcessWrite(stream, track.Media().Handler()))
+                return false;
 
         // Add 'minf' atom
         if (!TinyMovFileAtomProcessor_minf.ProcessWrite(stream, track))
@@ -1672,86 +3454,6 @@ class : public TinyMovFileAtomProcessorBase
 public:
     virtual uint32_t Type()
     {
-        return MKTAG('h', 'd', 'l', 'r');
-    }
-    virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
-    {
-        if (stream.atom_parent_id() != MKTAG('m', 'e', 't', 'a') &&
-            stream.atom_parent_id() != MKTAG('m', 'd', 'i', 'a') &&
-            stream.atom_parent_id() != MKTAG('m', 'i', 'n', 'f'))
-        {
-            std::cout << "Warning! Parent is not meta or mdia!" << std::endl;
-            return false;
-        }
-        
-        // version
-        stream.get_byte();
-
-        // flags
-        stream.get_byte();
-        stream.get_byte();
-        stream.get_byte();
-
-        // component type
-        stream.get_be32();
-
-        // component sub-type
-        stream.get_le32();
-
-        // component manufacturer
-        stream.get_be32();
-
-        // component flags
-        stream.get_be32();
-
-        // component flags mask
-        stream.get_be32();
-
-        // component name
-        stream.get_byte();
-
-        return true;
-    }
-    bool ProcessWrite(fstream_out_wrapper& stream, TinyMovFile& mov)
-    {
-        stream.push_atom(Type());
-        
-        // version
-        stream.put_byte(0);
-
-        // flags
-        stream.put_byte(0);
-        stream.put_byte(0);
-        stream.put_byte(0);
-
-        // component type
-        stream.put_be32(0);
-
-        // component sub-type
-        stream.put_le32(MKTAG('m', 'd', 't', 'a'));
-
-        // component manufacturer
-        stream.put_be32(0);
-
-        // component flags
-        stream.put_be32(0);
-
-        // component flags mask
-        stream.put_be32(0);
-
-        // component name
-        stream.put_byte(0);
-
-        stream.pop_atom();
-        return true;
-    }
-} TinyMovFileAtomProcessor_hdlr;
-
-class : public TinyMovFileAtomProcessorBase
-{
-public:
-    virtual uint32_t Type()
-    {
         return MKTAG('m', 'e', 't', 'a');
     }
     virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
@@ -1769,8 +3471,9 @@ public:
         stream.push_atom(Type());
 
         // Add 'hdlr' atom
-        if (!TinyMovFileAtomProcessor_hdlr.ProcessWrite(stream, mov))
-            return false;
+        if (mov.Metadata().Handler().Enabled())
+            if (!TinyMovFileAtomProcessor_hdlr.ProcessWrite(stream, mov.Metadata().Handler()))
+                return false;
             
         // Add 'keys' atom
         if (!TinyMovFileAtomProcessor_keys.ProcessWrite(stream, mov))
