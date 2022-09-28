@@ -328,9 +328,51 @@ public:
         _color_table_id = color_table_id;
     }
 
-    std::vector<uint8_t>& ExtensionsData()
+    struct Extension_t
     {
-        return _extensions_data;
+        uint32_t tag;
+        std::vector<uint8_t> data;
+    };
+    std::vector<Extension_t>& Extensions()
+    {
+        return _extensions;
+    }
+
+    struct Extension_ZRAW_t
+    {
+        bool exists;
+        uint32_t version;
+        uint32_t unk0;
+        uint32_t unk1;
+    };
+    Extension_ZRAW_t Ext_ZRAW()
+    {
+        Extension_ZRAW_t ext;
+        ext.exists = false;
+        ext.version = 0;
+        ext.unk0 = 0;
+        ext.unk1 = 0;
+
+        for (auto it = Extensions().begin(); it != Extensions().end(); ++it)
+        {
+            if (it->tag == MKTAG('z', 'r', 'a', 'w'))
+            {
+                ext.exists = true;
+
+                if (it->data.size() >= 4)
+                    ext.version = ((uint32_t*)it->data.data())[0];
+                
+                if (it->data.size() >= 8)
+                    ext.unk0 = ((uint32_t*)it->data.data())[1];
+
+                if (it->data.size() >= 12)
+                    ext.unk1 = ((uint32_t*)it->data.data())[2];
+
+                break;
+            }
+        }
+
+        return ext;
     }
 
 protected:
@@ -350,7 +392,7 @@ protected:
     uint16_t _depth;
     uint16_t _color_table_id;
 
-    std::vector<uint8_t> _extensions_data;
+    std::vector<Extension_t> _extensions;
 };
 
 class TinyMovTrackMediaAudioDescription
@@ -2148,9 +2190,24 @@ public:
                     TinyMovVideoDescriptionTableProcessor.ProcessRead(stream, vdesc);
                     
                     // Save extensions
-                    auto ext_sz = stream.atom_left();
-                    vdesc.ExtensionsData().resize(ext_sz);
-                    stream.read(vdesc.ExtensionsData().data(), ext_sz);
+                    while (stream.atom_left() > 0)
+                    {
+                        uint32_t ext_size = stream.get_be32();
+                        uint32_t ext_tag = stream.get_be32();
+
+                        stream.push_atom(ext_size - 8, ext_tag);
+
+                        auto ext_sz = stream.atom_left();
+
+                        TinyMovTrackMediaVideoDescription::Extension_t ext;
+                        ext.tag = ext_tag;
+                        ext.data.resize(ext_sz);
+                        stream.read(ext.data.data(), ext_sz);
+
+                        vdesc.Extensions().push_back(ext);
+
+                        stream.pop_atom();
+                    }
 
                     table.VideoDescriptionTable().push_back(vdesc);
                 }
@@ -2229,7 +2286,12 @@ public:
                     TinyMovVideoDescriptionTableProcessor.ProcessWrite(stream, *it);
 
                     // Write extensions
-                    stream.write(it->ExtensionsData().data(), it->ExtensionsData().size());
+                    for (auto e_it = it->Extensions().begin(); e_it != it->Extensions().end(); ++e_it)
+                    {
+                        stream.push_atom(e_it->tag);
+                        stream.write(e_it->data.data(), e_it->data.size());
+                        stream.pop_atom();
+                    }
 
                     stream.pop_atom();
                 }

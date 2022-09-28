@@ -15,6 +15,8 @@ Header-only simple&limited MOV (Apple QuickTime Movie) loader in C++.
       * [x] Sample sizes in MOV file
       * [x] Sample-to-Chunk info
       * [x] Time-to-Sample info
+      * [x] Sample Description Extensions
+        * [x] zraw
   * [x] Metadata info
 * [x] Atoms supported for reading/writing (not checked - skipped for now):
   * [x] ftyp
