@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ostream>
 #include <sstream>
+#include <functional>
 #include <memory.h>
 
 #ifdef _MSC_VER
@@ -34,6 +35,14 @@
 
 #define MKTAG(a, b, c, d) (a | (b << 8) | (c << 16) | (d << 24))
 #define __TINY_MOV_FILE_OUT_INITIAL_MDAT_ATOM_OFFSET 0x8000
+
+class TinyMovTrack;
+class TinyMovTrackMediaVideoDescription;
+struct TinyMovFileWriterParameters
+{
+    std::function<std::vector<uint8_t> (TinyMovTrack&, uint64_t, std::vector<uint8_t>&)> chunk_handler;
+    std::function<TinyMovTrackMediaVideoDescription (TinyMovTrackMediaVideoDescription)> video_description_handler;
+};
 
 class TinyMovMetadataKey
 {
@@ -379,13 +388,13 @@ public:
                 ext.exists = true;
 
                 if (it->data.size() >= 4)
-                    ext.version = ((uint32_t*)it->data.data())[0];
+                    ext.version = bswap_32(((uint32_t*)it->data.data())[0]);
                 
                 if (it->data.size() >= 8)
-                    ext.unk0 = ((uint32_t*)it->data.data())[1];
+                    ext.unk0 = bswap_32(((uint32_t*)it->data.data())[1]);
 
                 if (it->data.size() >= 12)
-                    ext.unk1 = ((uint32_t*)it->data.data())[2];
+                    ext.unk1 = bswap_32(((uint32_t*)it->data.data())[2]);
 
                 break;
             }
@@ -686,7 +695,7 @@ class TinyMovTrackMediaInfo
 {
 public:
     TinyMovTrackMediaInfo(TinyMovTrackMedia& parent)
-        : _parent(parent), _forced_sample_size(0) {}
+        : _parent(&parent), _forced_sample_size(0) {}
 
     uint32_t ForcedSampleSize()
     {
@@ -733,7 +742,7 @@ public:
 
     TinyMovTrackMedia& Parent()
     {
-        return _parent;
+        return *_parent;
     }
 
 protected:
@@ -748,14 +757,14 @@ protected:
 
     TinyMovHandlerInfo _hdlr;
 
-    TinyMovTrackMedia& _parent;
+    TinyMovTrackMedia* _parent;
 };
 
 class TinyMovTrack;
 class TinyMovTrackMedia
 {
 public:
-    TinyMovTrackMedia(TinyMovTrack& parent) : _parent(parent), _info(*this) {}
+    TinyMovTrackMedia(TinyMovTrack& parent) : _parent(&parent), _info(*this) {}
 
     struct Flags_t
     {
@@ -845,7 +854,7 @@ public:
 
     TinyMovTrack& Parent()
     {
-        return _parent;
+        return *_parent;
     }
 
 protected:
@@ -861,14 +870,14 @@ protected:
     TinyMovHandlerInfo _hdlr;
     TinyMovTrackMediaInfo _info;
 
-    TinyMovTrack& _parent;
+    TinyMovTrack* _parent;
 };
 
 class TinyMovFile;
 class TinyMovTrack
 {
 public:
-    TinyMovTrack(TinyMovFile& parent) : _parent(parent), _media(*this) {}
+    TinyMovTrack(TinyMovFile& parent) : _parent(&parent), _media(*this) {}
 
     struct DisplayMatrix_t
     {
@@ -974,7 +983,7 @@ public:
     }
     TinyMovFile& Parent()
     {
-        return _parent;
+        return *_parent;
     }
 protected:
     // Track Header
@@ -994,7 +1003,7 @@ protected:
     TinyMovTrackMedia _media;
 
     // Parent
-    TinyMovFile& _parent;
+    TinyMovFile* _parent;
 };
 
 class TinyMovFileCompatibilityInfo
@@ -1362,11 +1371,12 @@ protected:
 
 #endif
 
+class TinyMovFileWriter;
 class fstream_out_wrapper
 {
 public:
-    fstream_out_wrapper(std::fstream &stream) :
-        _file_stream(stream)
+    fstream_out_wrapper(std::fstream &stream, TinyMovFileWriterParameters parameters) :
+        _file_stream(stream), _parameters(parameters)
     {
         uint32_t valA = bswap_32(0x00000001);           // Use 64-bit size after 'mdat' tag
         _file_stream.write((char *)&valA, sizeof(valA));
@@ -1475,10 +1485,17 @@ public:
         _post_atoms_stream.clear();
     }
 
+    TinyMovFileWriterParameters& parameters()
+    {
+        return _parameters;
+    }
+
 protected:
     std::stringstream _post_atoms_stream;
     std::fstream &_file_stream;
     std::stack<int64_t> _atom_offsets_stack;
+
+    TinyMovFileWriterParameters& _parameters;
 };
 
 class ITinyMovFileAtomProcessor
@@ -2212,7 +2229,7 @@ public:
                     while (stream.atom_left() > 0)
                     {
                         uint32_t ext_size = stream.get_be32();
-                        uint32_t ext_tag = stream.get_be32();
+                        uint32_t ext_tag = stream.get_le32();
 
                         stream.push_atom(ext_size - 8, ext_tag);
 
@@ -2299,13 +2316,15 @@ public:
 
                 for (auto it = table.VideoDescriptionTable().begin(); it != table.VideoDescriptionTable().end(); ++it)
                 {
-                    stream.push_atom(it->DataFormat());
+                    auto vdesc = stream.parameters().video_description_handler(*it);
+                    
+                    stream.push_atom(vdesc.DataFormat());
 
                     // Write table
-                    TinyMovVideoDescriptionTableProcessor.ProcessWrite(stream, *it);
+                    TinyMovVideoDescriptionTableProcessor.ProcessWrite(stream, vdesc);
 
                     // Write extensions
-                    for (auto e_it = it->Extensions().begin(); e_it != it->Extensions().end(); ++e_it)
+                    for (auto e_it = vdesc.Extensions().begin(); e_it != vdesc.Extensions().end(); ++e_it)
                     {
                         stream.push_atom(e_it->tag);
                         stream.write(e_it->data.data(), e_it->data.size());
@@ -2569,19 +2588,34 @@ public:
             return false;
         }
 
-        uint8_t version = stream.get_byte();
+        uint32_t version_and_flags = stream.get_be32();
 
-        uint8_t flags[3];
-        flags[0] = stream.get_byte();
-        flags[1] = stream.get_byte();
-        flags[2] = stream.get_byte();
+        // Check field according to zraw extension
+        uint32_t zraw_xor_base = 0x0;
+        if (version_and_flags != 0)
+        {
+            auto& track = stream.get_current_track();
+            if (track.Media().Type() == TinyMovTrackMedia::Type_t::Video)
+            {
+                auto& desc_table = track.Media().Info().DescriptionTable().VideoDescriptionTable();
+                if (desc_table.size() == 1)
+                {
+                    auto ext_zraw = desc_table[0].Ext_ZRAW();
+                    if (ext_zraw.exists)
+                    {
+                        if (ext_zraw.version == 0x45A32DEF)
+                            zraw_xor_base = version_and_flags;
+                    }
+                }
+            }
+        }
 
-        uint32_t entries = stream.get_be32();
+        uint32_t entries = stream.get_be32() ^ zraw_xor_base;
         if (!entries)
             return true;
 
         for (int i = 0; i < entries; ++i)
-            stream.get_current_track().Media().Info().ChunkOffsets().push_back(stream.get_be32());
+            stream.get_current_track().Media().Info().ChunkOffsets().push_back(stream.get_be32() ^ zraw_xor_base);
 
         return true;
     }
@@ -2645,7 +2679,14 @@ public:
                     {
                         tmp_info.sample_size_sum_before = tmp_stci[g - 1].sample_size_sum_before;
                         for (int l = tmp_stci[g - 1].begin_sample; l < tmp_stci[g - 1].end_sample; ++l)
-                            tmp_info.sample_size_sum_before += track.Media().Info().SampleSizes()[l];
+                        {
+                            auto sample_size = (track.Media().Info().ForcedSampleSize() != 0) ?
+                                track.Media().Info().ForcedSampleSize() :
+                                track.Media().Info().SampleSizes()[l];
+
+                            tmp_info.sample_size_sum_before += sample_size;
+                        }
+                            
                     }
                     
                     tmp_stci.push_back(tmp_info);
@@ -2690,6 +2731,9 @@ public:
 
             // Get offset of new sample
             uint64_t offset = stream.tellp_mdat();
+
+            // Pre-process chunk
+            tmp_sample_data = stream.parameters().chunk_handler(track, chunk_offset, tmp_sample_data);
 
             // Write sample
             stream.write_mdat_sample(tmp_sample_data.data(), tmp_sample_data.size());
@@ -3676,13 +3720,25 @@ public:
 class TinyMovFileWriter
 {
 public:
+    TinyMovFileWriter() : _parameters
+    {
+        .chunk_handler = [](TinyMovTrack& track, uint64_t chunk_offset, std::vector<uint8_t>& chunk_data)
+        {
+            return chunk_data;
+        },
+        .video_description_handler = [](TinyMovTrackMediaVideoDescription video_description)
+        {
+            return video_description;
+        }
+    } {}
+
     bool SaveMovFile(TinyMovFile& mov, std::string path)
     {
         std::fstream f_out(path, std::ios::out | std::ios::binary);
         if (!f_out.is_open())
             return false;
 
-        fstream_out_wrapper f_out_wrapper(f_out);
+        fstream_out_wrapper f_out_wrapper(f_out, _parameters);
 
         // Add 'ftyp' atom
         if (!TinyMovFileAtomProcessor_ftyp.ProcessWrite(f_out_wrapper, mov))
@@ -3703,4 +3759,25 @@ public:
 
         return true;
     }
+
+    void ChunkHandler(std::function<std::vector<uint8_t> (TinyMovTrack& track, uint64_t chunk_offset, std::vector<uint8_t>& chunk_data)> handler)
+    {
+        _parameters.chunk_handler = handler;
+    }
+    std::function<std::vector<uint8_t> (TinyMovTrack& track, uint64_t chunk_offset, std::vector<uint8_t>& chunk_data)> ChunkHandler()
+    {
+        return _parameters.chunk_handler;
+    }
+
+    void VideoDescriptionHandler(std::function<TinyMovTrackMediaVideoDescription (TinyMovTrackMediaVideoDescription)> handler)
+    {
+        _parameters.video_description_handler = handler;
+    }
+    std::function<TinyMovTrackMediaVideoDescription (TinyMovTrackMediaVideoDescription)> VideoDescriptionHandler()
+    {
+        return _parameters.video_description_handler;
+    }
+
+protected:
+    TinyMovFileWriterParameters _parameters;
 };

@@ -7,6 +7,8 @@ Header-only simple&limited MOV (Apple QuickTime Movie) loader in C++.
 * [x] Opening existing MOV files
 * [x] Editing opened MOV info before writing
 * [x] Writing new MOV files (remuxing)
+  * [x] Runtime handler support for chunk data
+  * [x] Runtime handler support for video sample description
 * [x] Some MOV info is supported
   * [x] Tracks info
     * [x] Track media info
