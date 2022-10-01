@@ -977,6 +977,10 @@ public:
     {
         return *_parent;
     }
+	void Parent(TinyMovFile& parent)
+	{
+		_parent = &parent;
+	}
 protected:
     // Track Header
     Flags_t _flags;
@@ -1033,6 +1037,35 @@ protected:
 class TinyMovFile
 {
 public:
+	TinyMovFile() {}
+
+	TinyMovFile(const TinyMovFile& in)
+	{
+		_tracks = in._tracks;
+		_metadata = in._metadata;
+		_compatibility_info = in._compatibility_info;
+		_path = in._path;
+
+		_flags = in._flags;
+		_creation_time = in._creation_time;
+		_modification_time = in._modification_time;
+		_time_scale = in._time_scale;
+		_duration = in._duration;
+		_preferred_rate = in._preferred_rate;
+		_preferred_volume = in._preferred_volume;
+		_display_matrix = in._display_matrix;
+		_preview_time = in._preview_time;
+		_preview_duration = in._preview_duration;
+		_poster_time = in._poster_time;
+		_selection_time = in._selection_time;
+		_selection_duration = in._selection_duration;
+		_current_time = in._current_time;
+		_next_track_id = in._next_track_id;
+
+		for (auto it = _tracks.begin(); it != _tracks.end(); ++it)
+			it->Parent(*this);
+	}
+
     std::vector<TinyMovTrack>& Tracks()
     {
         return _tracks;
@@ -1211,16 +1244,21 @@ protected:
 
 struct TinyMovFileWriterParameters
 {
-    std::function<std::vector<uint8_t> (TinyMovTrack&, uint64_t, std::vector<uint8_t>&)> chunk_handler =
-        [](TinyMovTrack& track, uint64_t chunk_offset, std::vector<uint8_t>& chunk_data)
-        {
-            return chunk_data;
-        };
-    std::function<TinyMovTrackMediaVideoDescription (TinyMovTrackMediaVideoDescription)> video_description_handler =
-        [](TinyMovTrackMediaVideoDescription video_description)
-        {
-            return video_description;
-        };
+	TinyMovFileWriterParameters()
+	{
+		chunk_handler = [](TinyMovTrack& track, uint64_t chunk_offset, std::vector<uint8_t>& chunk_data)
+		{
+			return chunk_data;
+		};
+
+		video_description_handler = [](TinyMovTrackMediaVideoDescription video_description)
+		{
+			return video_description;
+		};
+	}
+
+	std::function<std::vector<uint8_t>(TinyMovTrack&, uint64_t, std::vector<uint8_t>&)> chunk_handler;
+	std::function<TinyMovTrackMediaVideoDescription(TinyMovTrackMediaVideoDescription)> video_description_handler;
 };
 
 class fstream_in_wrapper
@@ -1501,7 +1539,7 @@ protected:
     std::fstream &_file_stream;
     std::stack<int64_t> _atom_offsets_stack;
 
-    TinyMovFileWriterParameters& _parameters;
+    TinyMovFileWriterParameters _parameters;
 };
 
 class ITinyMovFileAtomProcessor
