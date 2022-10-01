@@ -36,14 +36,6 @@
 #define MKTAG(a, b, c, d) (a | (b << 8) | (c << 16) | (d << 24))
 #define __TINY_MOV_FILE_OUT_INITIAL_MDAT_ATOM_OFFSET 0x8000
 
-class TinyMovTrack;
-class TinyMovTrackMediaVideoDescription;
-struct TinyMovFileWriterParameters
-{
-    std::function<std::vector<uint8_t> (TinyMovTrack&, uint64_t, std::vector<uint8_t>&)> chunk_handler;
-    std::function<TinyMovTrackMediaVideoDescription (TinyMovTrackMediaVideoDescription)> video_description_handler;
-};
-
 class TinyMovMetadataKey
 {
 public:
@@ -1215,6 +1207,20 @@ protected:
     uint32_t _selection_duration;
     uint32_t _current_time;
     uint32_t _next_track_id;
+};
+
+struct TinyMovFileWriterParameters
+{
+    std::function<std::vector<uint8_t> (TinyMovTrack&, uint64_t, std::vector<uint8_t>&)> chunk_handler =
+        [](TinyMovTrack& track, uint64_t chunk_offset, std::vector<uint8_t>& chunk_data)
+        {
+            return chunk_data;
+        };
+    std::function<TinyMovTrackMediaVideoDescription (TinyMovTrackMediaVideoDescription)> video_description_handler =
+        [](TinyMovTrackMediaVideoDescription video_description)
+        {
+            return video_description;
+        };
 };
 
 class fstream_in_wrapper
@@ -3720,18 +3726,6 @@ public:
 class TinyMovFileWriter
 {
 public:
-    TinyMovFileWriter() : _parameters
-    {
-        .chunk_handler = [](TinyMovTrack& track, uint64_t chunk_offset, std::vector<uint8_t>& chunk_data)
-        {
-            return chunk_data;
-        },
-        .video_description_handler = [](TinyMovTrackMediaVideoDescription video_description)
-        {
-            return video_description;
-        }
-    } {}
-
     bool SaveMovFile(TinyMovFile& mov, std::string path)
     {
         std::fstream f_out(path, std::ios::out | std::ios::binary);
