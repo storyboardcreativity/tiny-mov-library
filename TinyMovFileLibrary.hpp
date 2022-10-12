@@ -756,13 +756,21 @@ class TinyMovTrack;
 class TinyMovTrackMedia
 {
 public:
-    TinyMovTrackMedia(TinyMovTrack& parent) : _parent(&parent), _info(*this) {}
+    TinyMovTrackMedia(TinyMovTrack& parent) : _parent(&parent), _info(*this), _version(0) {}
 
     struct Flags_t
     {
         uint8_t values[3];
     };
 
+	void Version(uint8_t value)
+	{
+		_version = value;
+	}
+	uint8_t Version()
+	{
+		return _version;
+	}
     void Flags(uint8_t flags[3])
     {
         memcpy(_flags.values, flags, sizeof(_flags.values));
@@ -851,6 +859,7 @@ public:
 
 protected:
     // Media Header
+	uint8_t _version;
     Flags_t _flags;
     uint64_t _creation_time;
     uint64_t _modification_time;
@@ -869,7 +878,7 @@ class TinyMovFile;
 class TinyMovTrack
 {
 public:
-    TinyMovTrack(TinyMovFile& parent) : _parent(&parent), _media(*this) {}
+    TinyMovTrack(TinyMovFile& parent) : _parent(&parent), _media(*this), _version(0) {}
 
     struct DisplayMatrix_t
     {
@@ -880,6 +889,14 @@ public:
         uint8_t values[3];
     };
 
+	void Version(uint8_t value)
+	{
+		_version = value;
+	}
+	uint8_t Version()
+	{
+		return _version;
+	}
     void Flags(uint8_t flags[3])
     {
         memcpy(_flags.values, flags, sizeof(_flags.values));
@@ -983,6 +1000,7 @@ public:
 	}
 protected:
     // Track Header
+	uint8_t _version;
     Flags_t _flags;
     uint64_t _creation_time;
     uint64_t _modification_time;
@@ -1794,6 +1812,7 @@ public:
         }
 
         uint8_t version = stream.get_byte();
+		stream.get_current_track().Version(version);
 
         uint8_t flags[3];
         flags[0] = stream.get_byte();
@@ -1846,19 +1865,18 @@ public:
     {
         stream.push_atom(Type());
 
-        uint8_t version = 1;
-        stream.put_byte(version);
+        stream.put_byte(track.Version());
 
         auto flags = track.Flags();
         stream.put_byte(flags.values[0]);
         stream.put_byte(flags.values[1]);
         stream.put_byte(flags.values[2]);
 
-        (version == 1) ? stream.put_be64(track.CreationTime()) : stream.put_be32(track.CreationTime());
-        (version == 1) ? stream.put_be64(track.ModificationTime()) : stream.put_be32(track.ModificationTime());
+        (track.Version() == 1) ? stream.put_be64(track.CreationTime()) : stream.put_be32(track.CreationTime());
+        (track.Version() == 1) ? stream.put_be64(track.ModificationTime()) : stream.put_be32(track.ModificationTime());
         stream.put_be32(track.TrackId());
         stream.put_be32(0);      // reserved
-        (version == 1) ? stream.put_be64(track.Duration()) : stream.put_be32(track.Duration());
+        (track.Version() == 1) ? stream.put_be64(track.Duration()) : stream.put_be32(track.Duration());
         stream.put_be64(0);      // reserved
         stream.put_be16(track.Layer());
         stream.put_be16(track.AlternativeGroup());
@@ -1897,6 +1915,7 @@ public:
         }
 
         uint8_t version = stream.get_byte();
+		stream.get_current_track().Media().Version(version);
 
         uint8_t flags[3];
         flags[0] = stream.get_byte();
@@ -1931,25 +1950,24 @@ public:
     {
         stream.push_atom(Type());
         
-        uint8_t version = 1;
-        stream.put_byte(version);
+        stream.put_byte(track.Media().Version());
 
         auto flags = track.Media().Flags();
         stream.put_byte(flags.values[0]);
         stream.put_byte(flags.values[1]);
         stream.put_byte(flags.values[2]);
 
-        (version == 1) ?
+        (track.Media().Version() == 1) ?
             stream.put_be64(track.Media().CreationTime()) :
             stream.put_be32(track.Media().CreationTime());
 
-        (version == 1) ?
+        (track.Media().Version() == 1) ?
             stream.put_be64(track.Media().ModificationTime()) :
             stream.put_be32(track.Media().ModificationTime());
         
         stream.put_be32(track.Media().TimeScale());
 
-        (version == 1) ?
+        (track.Media().Version() == 1) ?
             stream.put_be64(track.Media().Duration()) :
             stream.put_be32(track.Media().Duration());
 
