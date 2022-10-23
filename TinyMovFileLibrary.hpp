@@ -2811,6 +2811,65 @@ public:
 class : public TinyMovFileAtomProcessorBase
 {
 public:
+	virtual uint32_t Type()
+	{
+		return MKTAG('c', 'o', '6', '4');
+	}
+	virtual bool ProcessRead(fstream_in_wrapper& stream, TinyMovFile& mov)
+	{
+		if (stream.atom_parent_id() != MKTAG('s', 't', 'b', 'l'))
+		{
+			std::cout << "Warning! Parent is not stbl!" << std::endl;
+			return false;
+		}
+
+		uint32_t version_and_flags = stream.get_be32();
+
+		// Check field according to zraw extension
+		uint32_t zraw_xor_base = 0x0;
+		if (version_and_flags != 0)
+		{
+			auto& track = stream.get_current_track();
+			if (track.Media().Type() == TinyMovTrackMedia::Type_t::Video)
+			{
+				auto& desc_table = track.Media().Info().DescriptionTable().VideoDescriptionTable();
+				if (desc_table.size() == 1)
+				{
+					auto ext_zraw = desc_table[0].Ext_ZRAW();
+					if (ext_zraw.exists)
+					{
+						if (ext_zraw.version == 0x45A32DEF)
+							zraw_xor_base = version_and_flags;
+					}
+				}
+			}
+		}
+
+		uint32_t entries = stream.get_be32() ^ zraw_xor_base;
+		if (!entries)
+			return true;
+
+		for (int i = 0; i < entries; ++i)
+		{
+			if (zraw_xor_base == 0)
+				stream.get_current_track().Media().Info().ChunkOffsets().push_back(stream.get_be64());
+			else
+				stream.get_current_track().Media().Info().ChunkOffsets().push_back(stream.get_be64() ^ (0xFFFFFFFF00000000 | zraw_xor_base));
+		}
+
+		return true;
+	}
+
+	bool ProcessWrite(fstream_out_wrapper& stream, TinyMovTrack& track)
+	{
+		// NOT IMPLEMENTED YET!
+		return false;
+	}
+} TinyMovFileAtomProcessor_co64;
+
+class : public TinyMovFileAtomProcessorBase
+{
+public:
     virtual uint32_t Type()
     {
         return MKTAG('s', 't', 'b', 'l');
